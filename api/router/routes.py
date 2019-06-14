@@ -15,32 +15,32 @@ def add_routes(app):
 
 
 async def addServer(request, game_id):
-    if not allowed_client(request.ip, ALLOWED_CLIENTS):
+    if not allowed_client(request.remote_addr, ALLOWED_CLIENTS):
         raise ServerError("Client is not allowed")
     try:
-        return json(servers.add(request.ip, game_id, request.json))
+        return json(servers.add(request.remote_addr, game_id, request.json))
     except Exception as e:
         raise ServerError(e)
 
 async def deleteServer(request, uid):
-    if not allowed_client(request.ip, ALLOWED_CLIENTS):
+    if not allowed_client(request.remote_addr, ALLOWED_CLIENTS):
         raise ServerError("Client is not allowed")
     try:
-        return json(servers.delete(uid, request.ip))
+        return json(servers.delete(uid, request.remote_addr))
     except Exception as e:
         raise ServerError(e)
 
 async def getServer(request):
-    if not allowed_client(request.ip, ALLOWED_CLIENTS):
+    if not allowed_client(request.remote_addr, ALLOWED_CLIENTS):
         raise ServerError("Client is not allowed")
     try:
-        return json(servers.list(request.ip))
+        return json(servers.list(request.remote_addr))
     except Exception as e:
         raise ServerError(e)
 
 
 async def getGames(request):
-    if not allowed_client(request.ip, ALLOWED_CLIENTS):
+    if not allowed_client(request.remote_addr, ALLOWED_CLIENTS):
         raise ServerError("Client is not allowed")
     try:
         return json(enabled.get_enabled())
