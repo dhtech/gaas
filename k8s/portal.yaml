@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: gaas-portal
-        image: rctl/gaas-portal:beta5
+        image: quay.io/dhtech/gaas-portal
         ports:
         - containerPort: 80
 ---

@@ -1,6 +1,5 @@
 #!/bin/bash
 VERSION=$(date +%s)
-docker build -t rctl/gaas-api:$VERSION .
-docker push rctl/gaas-api:$VERSION
-kubectl --record deployment.apps/gaas-api set image deployment.v1.apps/gaas-api gaas-api=rctl/gaas-api:$VERSION
-
+docker build -t quay.io/dhtech/gaas-api:dev-$VERSION .
+docker push quay.io/dhtech/gaas-api:dev-$VERSION
+kubectl --record deployment.apps/gaas-api set image deployment.v1.apps/gaas-api gaas-api=quay.io/dhtech/gaas-api:dev-$VERSION
