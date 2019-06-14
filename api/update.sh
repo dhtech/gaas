@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 VERSION=$(date +%s)
 docker build -t quay.io/dhtech/gaas-api:dev-$VERSION .
 docker push quay.io/dhtech/gaas-api:dev-$VERSION
