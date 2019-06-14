@@ -1,0 +1,27 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gaas-api
+rules:
+- apiGroups: ["", "extensions", "apps"]
+  resources: ["pods", "services", "deployments", "deployments/status"]
+  verbs: ["get", "list", "create", "delete"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gaas-api
+subjects:
+- kind: ServiceAccount
+  name: gaas-api-account
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: gaas-api
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gaas-api-account
+  namespace: default

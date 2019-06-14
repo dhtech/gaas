@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>GaaS</title>
+    </head>
+
+    <body>
+      <div class="container" id="app">
+        <h4 class="center">Gaming as a Service</h4>
+        <div class="card orange lighten-2" style="margin-bottom:20px;">
+          <div class="card-content">
+              <strong>Notice!</strong>
+              <p>
+                This is the Dreamhack GaaS (Gaming as a Service) provided by DHTech. It's still being tested, so please use it with care! If you run into problems, contact Services group in DHTech.<br> 
+                Usage is being monitored and the service is provided with no guarantee of uptime or data persistence.
+              </p>
+          </div>
+        </div>
+        <div class="card " style="margin-bottom:20px;">
+            <div class="card-content">
+            <h5>Create Server</h5>
+            <p>
+            Choose from a service below. Enter any required parameters and click create. Once you have clicked create your server should show up below with its allocated ip address that you can use once it has been deployed.
+            Dependeing on which service you choose the time to deploy can vary.
+            </p><br>
+            <div class="row">
+              <p v-for="game in games">
+                <label>
+                  <input name="group1" type="radio" v-model="selected" :value="game" @click="changeService" />
+                  <span>{{game.name}}</span>
+                </label>
+              </p>
+              <form class="col s12" v-if="selected">
+                <div class="row">
+                  <div class="input-field col s12" v-for="param in selected.params">
+                    <strong>{{param.name}} <span v-if="param.optional"> (optional, can be left empty)</span></strong>
+                    <input :placeholder="param.description" type="text" class="validate" v-model="params[param.id]" :value="param.default">
+                  </div>
+                </div>
+              </form>
+              {{error}}
+              <a class="waves-effect waves-light btn right" @click="createService">Create</a>
+            </div>
+          </div>
+        </div>
+        <div class="card " style="margin-bottom:20px;">
+            <div class="card-content">
+        <h5>All Servers</h5>
+        Note! You may delete servers created by you, but not by others.
+        </div>
+        </div>
+        <div class="card " style="margin-bottom:20px;" v-for="server in servers">
+            <div class="card z-index-1">
+              <div class="card-content">
+                <span class="card-title">
+                  {{server.game}}
+                  <i class="material-icons red-text right" v-if="!server.ready && !server.prov">error</i>
+                  <i class="material-icons green-text right" v-if="server.ready && !server.prov">check_circle</i>
+                  <i class="material-icons orange-text right" v-if="server.prov">warning</i>
+                  <span class="right" v-if="server.ready">Running</span>
+                  <span class="right" v-if="!server.ready && !server.prov">Not running</span>
+                  <span class="right" v-if="server.prov">Creating job</span>
+                </span>
+                <div class="row" style="margin-top:15px;">
+                    <div class="col m3 s12">
+                      <strong>IP Address</strong><br>
+                      {{server.ip}}
+                    </div>
+                    <div class="col m4 s12">
+                      <strong>Ports</strong><br>
+                      {{server.ports.join(', ')}}
+                    </div>
+                    <div class="col m3 s12">
+                      <strong>Crashes</strong><br>
+                      Server restarted {{server.crashes}} times
+                    </div>
+                </div>
+                <p v-if="server.prov">
+                  <strong>Please wait for your gameserver to start, this might take a while. Page will refresh automatically.</strong>
+                </p>
+                <i v-if="!server.candelete">You can't delete this job.</i>
+              </div>
+              <div class="card-action" v-if="server.candelete">
+                <a href="#" @click="deleteService(server.uid)">Delete</a>
+              </div>
+          </div>
+        </div>
+
+      </div>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+      <script src="https://unpkg.com/vue@2.4.4/dist/vue.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.2/axios.js"></script>
+      <script>
+       
+        var data = {
+            error: "",
+            selected: null,
+            games: [],
+            params: {},
+            servers: [],
+        };
+        Vue.prototype.$http = axios
+        new Vue({
+          el: '#app',
+          data: data,
+          methods: {
+            changeService: function() {
+              data.params = {}
+            },
+            createService: function() {
+              this.$http.post('http://77.80.229.129/servers/'+data.selected.id, data.params).then(function(response) {
+                data.selected = null
+                data.params = {}
+                this.reloadServers()
+              }).catch(error => { 
+                if (error.response) {
+                  data.error = error.response.data
+                }
+              });
+            },
+            deleteService: function(id) {
+              this.$http.delete('http://77.80.229.129/servers/'+id).then(function(response) {
+              }).catch(error => { 
+                if (error.response) {
+                  data.error = error.response.data
+                }
+              });
+            },
+            reloadServers: function() {
+              this.$http.get('http://77.80.229.129/servers').then(function(response) {
+                if (response) {
+                  data.servers = Object.keys(response.data).map(function(key){
+                    server = response.data[key];
+                    server.ready = true;
+                    server.prov = false;
+                    server.crashes = 0;
+                    for(i = 0; i < server.pods.length; i++) {
+                      if(!server.pods[i].ready){
+                        server.ready = false;
+                      }
+                      if(server.pods[i].state == "ContainerCreating"){
+                        server.prov = true;
+                      }
+                      server.crashes += server.pods[i].restart_count
+                    }
+                    return server
+                  });
+                }
+              });
+            }
+          },
+          created: function() {
+            this.$http.get('http://77.80.229.129/games').then(function(response) {
+              data.games = Object.keys(response.data).map(function(key){
+                  return response.data[key];
+              });
+            });
+            this.reloadServers()
+            setInterval(function () {
+              this.reloadServers()
+            }.bind(this), 3000); 
+          },
+        });
+      </script>
+    </body>
+  </html>

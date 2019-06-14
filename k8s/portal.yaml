@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gaas-portal
+spec:
+  selector:
+    matchLabels:
+      app: gaas-portal
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: gaas-portal
+    spec:
+      containers:
+      - name: gaas-portal
+        image: rctl/gaas-portal:beta5
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gaas-portal
+spec:
+  selector:
+    app: gaas-portal
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  externalIPs:
+  - 77.80.229.130

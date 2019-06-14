@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gaas-api
+spec:
+  selector:
+    matchLabels:
+      app: gaas-api
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: gaas-api
+    spec:
+      containers:
+      - name: gaas-api
+        image: rctl/gaas-api:beta12
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      serviceAccountName: gaas-api-account
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gaas-api
+  annotations:
+    kube-router.io/service.dsr: "tunnel"
+spec:
+  selector:
+    app: gaas-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  externalIPs:
+  - 77.80.229.129
