@@ -2,9 +2,6 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: gaas-api
-  annotations:
-    # TODO: Replace when HTTPS is enabled
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   tls:
   - secretName: gaas-api-ingress-tls
@@ -23,9 +20,6 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: gaas-portal
-  annotations:
-    # TODO: Replace when HTTPS is enabled
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   tls:
   - secretName: gaas-portal-ingress-tls
