@@ -111,7 +111,7 @@
               data.params = {}
             },
             createService: function() {
-              this.$http.post('http://77.80.229.129/servers/'+data.selected.id, data.params).then(function(response) {
+              this.$http.post('http://gaas-api.event.dreamhack.se/servers/'+data.selected.id, data.params).then(function(response) {
                 data.selected = null
                 data.params = {}
                 this.reloadServers()
@@ -122,7 +122,7 @@
               });
             },
             deleteService: function(id) {
-              this.$http.delete('http://77.80.229.129/servers/'+id).then(function(response) {
+              this.$http.delete('http://gaas-api.event.dreamhack.se/servers/'+id).then(function(response) {
               }).catch(error => { 
                 if (error.response) {
                   data.error = error.response.data
@@ -130,7 +130,7 @@
               });
             },
             reloadServers: function() {
-              this.$http.get('http://77.80.229.129/servers').then(function(response) {
+              this.$http.get('http://gaas-api.event.dreamhack.se/servers').then(function(response) {
                 if (response) {
                   data.servers = Object.keys(response.data).map(function(key){
                     server = response.data[key];
@@ -153,7 +153,7 @@
             }
           },
           created: function() {
-            this.$http.get('http://77.80.229.129/games').then(function(response) {
+            this.$http.get('http://gaas-api.event.dreamhack.se/games').then(function(response) {
               data.games = Object.keys(response.data).map(function(key){
                   return response.data[key];
               });

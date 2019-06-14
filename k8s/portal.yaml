@@ -29,5 +29,3 @@ spec:
   - protocol: TCP
     port: 80
     targetPort: 80
-  externalIPs:
-  - 77.80.229.130

@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gaas-api
+  annotations:
+    # TODO: Replace when HTTPS is enabled
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+  - secretName: gaas-api-ingress-tls
+    hosts:
+    - gaas-api.event.dreamhack.se
+  rules:
+  - host: gaas-api.event.dreamhack.se
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: gaas-api
+          servicePort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gaas-portal
+  annotations:
+    # TODO: Replace when HTTPS is enabled
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  tls:
+  - secretName: gaas-portal-ingress-tls
+    hosts:
+    - gaas.event.dreamhack.se
+  rules:
+  - host: gaas.event.dreamhack.se
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: gaas-portal
+          servicePort: 80
