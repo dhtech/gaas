@@ -14,7 +14,7 @@
 
     <body>
       <div class="container" id="app" style="display: none">
-        <img src="GaaS.png" style="margin:auto; display: block; height: 200px; padding: 20px;" v-bind:class="{ blurred: !ack }" />
+        <img src="GaaS.png" style="margin:auto; display: block; max-height: 200px; padding: 20px;" class="responsive-img" v-bind:class="{ blurred: !ack }" />
         <div class="card orange lighten-3" style="margin-bottom:20px" v-if="!ack">
           <div class="card-content">
               <strong>Notice!</strong>
@@ -33,7 +33,7 @@
               </p>
           </div>
         </div>
-        <div class="card " style="margin-bottom:20px;">
+        <div class="card " style="margin-bottom:20px;" v-if="allowed">
             <div class="card-content">
             <h5>Create Server</h5>
             <p>
@@ -70,7 +70,7 @@
             <div class="card z-index-1">
               <div class="card-content">
                 <span class="card-title">
-                  {{server.game}}
+                  {{server.gamename}}
                   <i class="material-icons red-text right" v-if="!server.ready && !server.prov">error</i>
                   <i class="material-icons green-text right" v-if="server.ready && !server.prov">check_circle</i>
                   <i class="material-icons orange-text right" v-if="server.prov">warning</i>
@@ -83,19 +83,14 @@
                       <strong>IP Address</strong><br>
                       {{server.ip}}
                     </div>
-                    <div class="col m4 s12">
-                      <strong>Ports</strong><br>
-                      {{server.ports.join(', ')}}
-                    </div>
-                    <div class="col m3 s12">
+                    <div class="col m3 s12" v-if="server.crashes > 0">
                       <strong>Crashes</strong><br>
-                      Server restarted {{server.crashes}} times
+                      <span>Server restarted {{server.crashes}} times</span>
                     </div>
                 </div>
                 <p v-if="server.prov">
                   <strong>Please wait for your gameserver to start, this might take a while. Page will refresh automatically.</strong>
                 </p>
-                <i v-if="!server.candelete">You can't delete this job.</i>
               </div>
               <div class="card-action" v-if="server.candelete">
                 <a href="#" @click="deleteService(server.uid)">Delete</a>
@@ -110,6 +105,7 @@
       <script>
 
         var data = {
+            allowed: false,
             error: "",
             selected: null,
             ack: localStorage.getItem('ack'),
@@ -130,7 +126,7 @@
                 data.selected = null
                 data.params = {}
                 this.reloadServers()
-              }).catch(error => { 
+              }).catch(error => {
                 if (error.response) {
                   data.error = error.response.data
                 }
@@ -138,7 +134,7 @@
             },
             deleteService: function(id) {
               this.$http.delete('https://gaas-api.event.dreamhack.se/servers/'+id).then(function(response) {
-              }).catch(error => { 
+              }).catch(error => {
                 if (error.response) {
                   data.error = error.response.data
                 }
@@ -173,6 +169,7 @@
           },
           created: function() {
             this.$http.get('https://gaas-api.event.dreamhack.se/games').then(function(response) {
+              data.allowed = true;
               data.games = Object.keys(response.data).map(function(key){
                   return response.data[key];
               });
