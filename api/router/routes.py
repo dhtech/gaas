@@ -31,8 +31,6 @@ async def deleteServer(request, uid):
         raise ServerError(e)
 
 async def getServer(request):
-    if not allowed_client(request.remote_addr, ALLOWED_CLIENTS):
-        raise ServerError("Client is not allowed")
     try:
         return json(servers.list(request.remote_addr))
     except Exception as e:

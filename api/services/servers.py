@@ -24,9 +24,12 @@ def list(u_ip):
         uid=service.metadata.labels["server"]
         candelete=False
         ip=service.spec.external_i_ps[0]
+        game=service.metadata.labels["game"]
+        name=get_game_by_id(game).name
         servers[uid] = {
             "uid":service.metadata.labels["server"],
-            "game": service.metadata.labels["game"],
+            "game": game,
+            "gamename": name,
             "ip": ip,
             "ports": [
                 "{}/{}".format(port.protocol, port.port) 
