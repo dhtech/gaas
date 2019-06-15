@@ -32,7 +32,7 @@ def list(u_ip):
             "gamename": name,
             "ip": ip,
             "ports": [
-                "{}/{}".format(port.protocol, port.port) 
+                "{}/{}".format(port.protocol, port.port)
                 for port in service.spec.ports
             ]
         }
@@ -59,7 +59,7 @@ def list(u_ip):
             "restart_count": status.restart_count,
             "state": status.state.waiting.reason if status.state.waiting is not None else None,
         } for status in pod.status.container_statuses]
-    
+
     return servers
 
 
@@ -104,6 +104,15 @@ def add(ip, game_id, params):
         value=ip
     )]
     containers = game.make_deployment(params)
+    generic_ports = []
+    # TODO(bluecmd): Hack to work around that not all
+    # ports are routed to the VIP by default. This allows
+    # outgoing connections from inside the pod on the VIP.
+    for p in range(50000, 50016):
+        generic_ports.append(client.V1ServicePort(
+            name="internal-tcp-" + str(p), port=p, target_port=p, protocol="TCP"))
+        generic_ports.append(client.V1ServicePort(
+            name="internal-udp-" + str(p), port=p, target_port=p, protocol="UDP"))
     for container in containers:
         if container.env:
             container.env.extend(extra_env)
@@ -123,12 +132,26 @@ def add(ip, game_id, params):
     deployment=client.V1Deployment(
             spec=client.V1DeploymentSpec(
                 replicas=1,
+                strategy=client.AppsV1beta1DeploymentStrategy(
+                    rolling_update=client.AppsV1beta1RollingUpdateDeployment(
+                        max_surge=0,
+                        max_unavailable=1
+                    )
+                ),
                 selector=client.V1LabelSelector(
                     match_labels=labels,
                 ),
                 template=client.V1PodTemplateSpec(
                     spec=client.V1PodSpec(
                         containers=containers,
+                        termination_grace_period_seconds=0,
+                        # TODO(bluecmd): Hack to work around that not all
+                        # ports are routed to the VIP by default. This allows
+                        # outgoing connections from inside the pod on the VIP.
+                        security_context=client.V1PodSecurityContext(
+                            sysctls=[client.V1Sysctl(
+                                name='net.ipv4.ip_local_port_range',
+                                value='50000 50015')]),
                         affinity=client.V1Affinity(
                             node_affinity=client.V1NodeAffinity(
                                 required_during_scheduling_ignored_during_execution=client.V1NodeSelector(
@@ -154,19 +177,17 @@ def add(ip, game_id, params):
         spec=client.V1ServiceSpec(
             type="ClusterIP",
             selector=labels,
-            ports=game.make_service(params),
+            ports=game.make_service(params) + generic_ports,
             external_i_ps=[ip_ext],
         )
     )
     deployment.metadata=metadata
     deployment.spec.template.metadata=metadata
     service.metadata=metadata
-    service.metadata.annotations={
-			#"kube-router.io/service.dsr": "tunnel"
-		}
+    service.metadata.annotations={"kube-router.io/service.dsr": "tunnel"}
 
     client.AppsV1Api().create_namespaced_deployment(
-        namespace=NAMESPACE, 
+        namespace=NAMESPACE,
         body=deployment,
     )
 
@@ -174,7 +195,7 @@ def add(ip, game_id, params):
         namespace=NAMESPACE,
         body=service,
     )
-    
+
     return {"uid": uid, "ip": ip}
 
 def alloc_ip():
@@ -184,7 +205,7 @@ def alloc_ip():
     for service in services.items:
         if service.spec.external_i_ps:
             reserved.extend(service.spec.external_i_ps)
-    for ip in space: 
+    for ip in space:
         if str(ip) not in reserved:
             print("Alloc ip {}".format(ip))
             return str(ip)

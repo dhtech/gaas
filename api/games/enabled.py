@@ -5,6 +5,7 @@ from games.specs.factorio import FactorioGameSpec
 
 ENABLED_GAMES={
     CSSGameSpec.id: CSSGameSpec(),
+    CSGoGameSpec.id: CSGoGameSpec(),
     FactorioGameSpec.id: FactorioGameSpec()
 }
 
