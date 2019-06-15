@@ -1,8 +1,8 @@
 from kubernetes import client
 from games.defaults import (
-    GameSpec, 
-    Param, 
-    ParamException, 
+    GameSpec,
+    Param,
+    ParamException,
     ParamTypes
 )
 
@@ -13,7 +13,7 @@ class FactorioGameSpec(GameSpec):
 
     def make_deployment(self, params):
         return [client.V1Container(
-            image="rctl/gaas-factorio:1560416515",
+            image="quay.io/dhtech/gaas-game-factorio:v0.17.49-2",
             name="factorio",
             resources=client.V1ResourceRequirements(
                 limits={
