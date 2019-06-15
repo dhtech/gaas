@@ -4,18 +4,32 @@
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <title>GaaS</title>
+      <title>GaaS - Gaming as a Service</title>
+      <style>
+.blurred {
+  filter: blur(16px);
+}
+      </style>
     </head>
 
     <body>
-      <div class="container" id="app">
-        <img src="GaaS.png" style="margin:auto; display: block; height: 200px; padding: 20px;" />
-        <div class="card orange lighten-3" style="margin-bottom:20px;">
+      <div class="container" id="app" style="display: none">
+        <img src="GaaS.png" style="margin:auto; display: block; height: 200px; padding: 20px;" v-bind:class="{ blurred: !ack }" />
+        <div class="card orange lighten-3" style="margin-bottom:20px" v-if="!ack">
           <div class="card-content">
               <strong>Notice!</strong>
               <p>
-                This is the Dreamhack GaaS (Gaming as a Service) provided by DHTech. It's still being tested, so please use it with care! If you run into problems, contact Services group in DHTech.<br> 
+                This is the Dreamhack GaaS (Gaming as a Service) provided by DHTech. It's still being tested, so please use it with care! If you run into problems, contact Services group in DHTech.<br>
                 Usage is being monitored and the service is provided with no guarantee of uptime or data persistence.
+              </p>
+              </br>
+              <p>
+              <label>
+                <input type="checkbox" name="nokrankt" @click="processAck()">
+                <span class="black-text">
+                  I agree that this is a pre-alpha product and I will not be kränkt by the <a href="http://hooli.xyz/">signature logo</a>
+                </span>
+              </label>
               </p>
           </div>
         </div>
@@ -94,10 +108,11 @@
       <script src="https://unpkg.com/vue@2.4.4/dist/vue.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.15.2/axios.js"></script>
       <script>
-       
+
         var data = {
             error: "",
             selected: null,
+            ack: localStorage.getItem('ack'),
             games: [],
             params: {},
             servers: [],
@@ -150,6 +165,10 @@
                   });
                 }
               });
+            },
+            processAck: function() {
+              localStorage.setItem("ack", true);
+              data.ack = true;
             }
           },
           created: function() {
@@ -158,10 +177,11 @@
                   return response.data[key];
               });
             });
-            this.reloadServers()
+            this.reloadServers();
+            app.style.display = "block";
             setInterval(function () {
-              this.reloadServers()
-            }.bind(this), 3000); 
+              this.reloadServers();
+            }.bind(this), 3000);
           },
         });
       </script>
@@ -169,6 +189,7 @@
         <a class="btn-floating btn-large" href="https://docs.google.com/forms/d/1kxS0lG4v8iKtLCP-2R1ABSlsBmurbosdyf2GG3hr394/viewform">
           <i class="large material-icons">chat</i>
         </a>
+      </div>
       </div>
     </body>
   </html>
